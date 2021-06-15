@@ -47,8 +47,6 @@ export default class GitAPI {
             result.push(...responseData)
         }
 
-        console.log(result)
-
         if (result.length > 0) {
             result.map(item => {
                 const existing = languages.find(ln => ln.language === item.language)
