@@ -34,10 +34,20 @@ export default class GitAPI {
         return result?.public_repos ? result.public_repos : 0
     }
 
-    private getUserRepositories = async(): Promise<Final[]> => {
+    private getUserRepositories = async(repoCount: number): Promise<Final[]> => {
+        const perPage = 100
+        const pages = Math.ceil(repoCount/perPage)
         const url = this.repoEndpoint.replace("$", this.userName)
-        const result: Repo[] = await (await fetch(url).catch(this.handleApiError)).json().catch(this.handleParseError)
         const languages: Final[] = []
+        const result: Repo[] = []
+
+        for (let i = 1; i <= pages; i++) {
+            const endPoint = `${url}?page=${i}&per_page=${perPage}`
+            const responseData =  await (await fetch(endPoint).catch(this.handleApiError)).json().catch(this.handleParseError)
+            result.push(...responseData)
+        }
+
+        console.log(result)
 
         if (result.length > 0) {
             result.map(item => {
@@ -57,6 +67,6 @@ export default class GitAPI {
 
     getUserLanguages = async (): Promise<Final[]> => {
         const userRepoCount = await this.getUserRepositoriesCount()
-        return userRepoCount > 0 ? await this.getUserRepositories() : []
+        return userRepoCount > 0 ? await this.getUserRepositories(userRepoCount) : []
     }
 }
