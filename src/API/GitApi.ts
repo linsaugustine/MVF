@@ -39,13 +39,15 @@ export default class GitAPI {
         const pages = Math.ceil(repoCount/perPage)
         const url = this.repoEndpoint.replace("$", this.userName)
         const languages: Final[] = []
-        const result: Repo[] = []
+        const fetchPromises = []
 
         for (let i = 1; i <= pages; i++) {
             const endPoint = `${url}?page=${i}&per_page=${perPage}`
-            const responseData =  await (await fetch(endPoint).catch(this.handleApiError)).json().catch(this.handleParseError)
-            result.push(...responseData)
+            const responseData =  fetch(endPoint).then(res => res.json()).catch(this.handleApiError)
+            fetchPromises.push(responseData)
         }
+
+        const result: Repo[] = await (await Promise.all(fetchPromises)).flat(1)
 
         if (result.length > 0) {
             result.map(item => {
